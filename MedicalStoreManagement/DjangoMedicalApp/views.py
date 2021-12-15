@@ -2,13 +2,16 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
 from .serializers import CompanySerializer
 
 from .models import Company
 
 # Create your views here.
 class CompanyViewSet(viewsets.ViewSet):
-    
+    authentication_classes=[JWTAuthentication]
+    permission_classes=[IsAuthenticated]
     def list(self,request):
         company=Company.objects.all()
         serializer=CompanySerializer(company, many=True, context={"request":request})
@@ -38,7 +41,6 @@ class CompanyViewSet(viewsets.ViewSet):
             dict_response={"error":True,"message":"Error During Updating Company Data"}
         
         return Response(dict_response)
-
 
 
 company_list=CompanyViewSet.as_view({"get":"list"})
