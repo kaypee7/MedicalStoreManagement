@@ -39,6 +39,12 @@ class MedicalDetailsSerializer(serializers.ModelSerializer):
         response['medicine']=MedicineSerializer(instance.medicine_id).data
         return response
 
+class MedicalDetailsSerializerSimple(serializers.ModelSerializer):
+    class Meta:
+        model=MedicalDetails
+        fields="__all__"
+
+
 class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model=Employee
@@ -67,25 +73,6 @@ class CustomerRequestSerializer(serializers.ModelSerializer):
         model=CustomerRequest
         fields="__all__"
 
-# class EmployeeSalarySerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model=EmployeeSalary
-#         fields="__all__"
-
-#     def to_representation(self, instance):
-#         response =super().to_representation(instance)
-#         response['employee']=EmployeeSerializer(instance.employee_id).data
-#         return response
-
-# class BillDetailsSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model=BillDetails
-#         fields="__all__"
-    
-#     def to_representation(self, instance):
-#         response =super().to_representation(instance)
-#         response['bill']=BillSerializer(instance.bill_id).data
-#         return response
 
 class CompanyAccountSerializer(serializers.ModelSerializer):
     class Meta:

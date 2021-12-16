@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
-from .serializers import CompanyBankSerializer, CompanySerializer, MedicalDetailsSerializer, MedicineSerializer
+from .serializers import CompanyBankSerializer, CompanySerializer, MedicalDetailsSerializer, MedicalDetailsSerializerSimple, MedicineSerializer
 
 from .models import Company, CompanyBank, MedicalDetails, Medicine
 
@@ -124,7 +124,7 @@ class MedicineViewSet(viewsets.ViewSet):
         # Adding Extra Key for Medicine Details in Medicine
         for medicine in medicine_data:
             medicine_details=MedicalDetails.objects.filter(medicine_id=medicine["id"])
-            medicine_details_serializers=MedicalDetailsSerializer(medicine_details,many=True)
+            medicine_details_serializers=MedicalDetailsSerializerSimple(medicine_details,many=True)
             medicine["medicine_details"]=medicine_details_serializers.data
             newmedicinelist.append(medicine)
 
@@ -135,6 +135,13 @@ class MedicineViewSet(viewsets.ViewSet):
         queryset=Medicine.objects.all()
         medicine=get_object_or_404(queryset,pk=pk)
         serializer=MedicineSerializer(medicine,context={"request":request})
+
+        serializer_data=serializer.data
+        # Adding Extra Key for Medicine Details in Medicine
+        medicine_details=MedicalDetails.objects.filter(medicine_id=serializer_data["id"])
+        medicine_details_serializers=MedicalDetailsSerializerSimple(medicine_details,many=True)
+        serializer_data["medicine_details"]=medicine_details_serializers.data
+
         return Response({"error":False,"message":"Single Data Fetch","data":serializer.data})
 
     def update(self,request,pk=None):
