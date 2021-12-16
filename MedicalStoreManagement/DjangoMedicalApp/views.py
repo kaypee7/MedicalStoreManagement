@@ -5,9 +5,9 @@ from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
-from .serializers import CompanyBankSerializer, CompanySerializer, MedicineSerializer
+from .serializers import CompanyBankSerializer, CompanySerializer, MedicalDetailsSerializer, MedicineSerializer
 
-from .models import Company, CompanyBank, Medicine
+from .models import Company, CompanyBank, MedicalDetails, Medicine
 
 # Create your views here.
 class CompanyViewSet(viewsets.ViewSet):
@@ -94,6 +94,22 @@ class MedicineViewSet(viewsets.ViewSet):
             serializer=MedicineSerializer(data=request.data,context={"request":request})
             serializer.is_valid(raise_exception=True)
             serializer.save()
+
+            medicine_id=serializer.data['id'];
+            # print(medicine_id)
+
+            # Adding and saving Id into Medicine Details Table
+            medicine_details_list=[]
+            for medicine_detail in request.data['medicine_details']:
+                print(medicine_detail)
+                medicine_detail['medicine_id']=medicine_id
+                medicine_details_list.append(medicine_detail)
+                print(medicine_detail)
+
+            serializer2=MedicalDetailsSerializer(data=medicine_details_list,many=True,context={"request":request})
+            serializer2.is_valid()
+            serializer2.save()
+
             dict_response={"error":False,"message":"Medicine Data Save Successfully"}
         except:
             dict_response={"error":True,"message":"Error During Saving Medicine Data"}
@@ -102,7 +118,17 @@ class MedicineViewSet(viewsets.ViewSet):
     def list(self,request):
         medicine=Medicine.objects.all()
         serializer=MedicineSerializer(medicine, many=True, context={"request":request})
-        response_dict= {"error":False,"message":"All Medicine List Data","data":serializer.data}
+
+        medicine_data=serializer.data
+        newmedicinelist=[]
+        # Adding Extra Key for Medicine Details in Medicine
+        for medicine in medicine_data:
+            medicine_details=MedicalDetails.objects.filter(medicine_id=medicine["id"])
+            medicine_details_serializers=MedicalDetailsSerializer(medicine_details,many=True)
+            medicine["medicine_details"]=medicine_details_serializers.data
+            newmedicinelist.append(medicine)
+
+        response_dict= {"error":False,"message":"All Medicine List Data","data":newmedicinelist}
         return Response(response_dict)
 
     def retrieve(self,request,pk=None):
